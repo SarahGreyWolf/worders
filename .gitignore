@@ -1,0 +1,5 @@
+/target
+/pkg
+/assets/english.txt
+
+Cargo.lock
