@@ -31,19 +31,29 @@ impl Table {
         } else {
             document().create_element("table").unwrap()
         };
+        let window = window();
+        let w_height = (window.inner_height().unwrap().as_f64().unwrap() as u32);
+        let w_width = (window.inner_width().unwrap().as_f64().unwrap() as u32);
+        let dom_dimension = if w_height > w_width {
+            w_width
+        } else {
+            w_height
+        } - 50;
         let mut cells: Vec<Cell> = vec![];
         table.set_id("game");
-        for y in 0..height {
-            let row = document().create_element("tr").expect(&format!("Failed to create row at {:#}", y));
-            for x in 0..width {
-                let cell = document().create_element("td").expect(&format!("Failed to create cell at {:#},{:#}", x, y));
-                cell.set_id(&format!("{:#}", x + y * width));
+        for row in 0..height {
+            let new_row = document().create_element("tr").expect(&format!("Failed to create row at {:#}", row));
+            for column in 0..width {
+                let cell = document().create_element("td").expect(&format!("Failed to create cell at {:#},{:#}", column, row));
+                cell.set_id(&format!("{:#}", column + row * width));
                 cell.set_class_name("inactive");
-                let cell_element = cell.dyn_ref::<HtmlTableCellElement>().expect("Element was not a HtmlElement");
-                cells.push(Cell::new(x, y, cell_element.clone()));
-                row.append_child(&cell).unwrap();
+                let cell_element = cell.dyn_ref::<HtmlTableCellElement>().expect(&format!("Element at {:#},{:#} was not a HtmlElement", column, row));
+                cell_element.set_width(&format!("{:#}", dom_dimension/width));
+                cell_element.set_height(&format!("{:#}", dom_dimension/height));
+                cells.push(Cell::new(column, row, cell_element.clone()));
+                new_row.append_child(&cell_element).unwrap();
             }
-            table.append_child(&row).unwrap();
+            table.append_child(&new_row).unwrap();
         }
         let table_element = table.dyn_ref::<HtmlTableElement>().expect("Element was not a table");
         body().append_child(&table).expect("Failed to append table to body");
