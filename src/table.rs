@@ -24,21 +24,15 @@ pub struct Table {
 #[wasm_bindgen]
 impl Table {
     pub fn new(width: u32, height: u32, cell_size: u32, element: Option<HtmlElement>) -> Self {
-        let table = if let Some(element) = element {
-            let table = document().create_element("table").unwrap();
-            element.append_child(&table).expect("Failed to append table to element");
-            table
-        } else {
-            document().create_element("table").unwrap()
-        };
+        let table = document().create_element("table").unwrap();
         let window = window();
         let w_height = (window.inner_height().unwrap().as_f64().unwrap() as u32);
         let w_width = (window.inner_width().unwrap().as_f64().unwrap() as u32);
-        let dom_dimension = if w_height > w_width {
+        let mut dom_dimension = if w_height > w_width {
             w_width
         } else {
             w_height
-        } - 50;
+        };
         let mut cells: Vec<Cell> = vec![];
         table.set_id("game");
         for row in 0..height {
@@ -48,20 +42,28 @@ impl Table {
                 cell.set_id(&format!("{:#}", column + row * width));
                 cell.set_class_name("inactive");
                 let cell_element = cell.dyn_ref::<HtmlTableCellElement>().expect(&format!("Element at {:#},{:#} was not a HtmlElement", column, row));
-                cell_element.set_width(&format!("{:#}", dom_dimension/width));
-                cell_element.set_height(&format!("{:#}", dom_dimension/height));
+                cell_element.set_width(&format!("{:#}", dom_dimension/width-4));
+                cell_element.set_height(&format!("{:#}", dom_dimension/height- 4));
                 cells.push(Cell::new(column, row, cell_element.clone()));
                 new_row.append_child(&cell_element).unwrap();
             }
             table.append_child(&new_row).unwrap();
         }
         let table_element = table.dyn_ref::<HtmlTableElement>().expect("Element was not a table");
-        body().append_child(&table).expect("Failed to append table to body");
+        if let Some(element) = element {
+            element.append_child(&table).expect("Failed to append table to element");
+        } else {
+            body().append_child(&table).expect("Failed to append table to body");
+        }
         Table {
             size: [width, height],
             element: table_element.clone(),
             cells
         }
+    }
+
+    fn get_cell(&mut self, x: usize, y: usize) -> &mut Cell {
+       &mut self.cells[x + y * self.size[1] as usize]
     }
 }
 
@@ -100,5 +102,11 @@ impl Cell {
 
     fn set_colour(&mut self, colour: &str) {
         self.background_colour = colour.to_string();
+    }
+
+    fn set_callback(&mut self, cb: Box<dyn FnMut()>) {
+        let closure = Closure::wrap(cb as Box<dyn FnMut()>);
+        self.element.set_onclick(Some(closure.as_ref().unchecked_ref()));
+        closure.forget();
     }
 }
