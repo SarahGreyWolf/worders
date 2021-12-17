@@ -26,8 +26,8 @@ impl Table {
     pub fn new(width: u32, height: u32, cell_size: u32, element: Option<HtmlElement>) -> Self {
         let table = document().create_element("table").unwrap();
         let window = window();
-        let w_height = (window.inner_height().unwrap().as_f64().unwrap() as u32);
-        let w_width = (window.inner_width().unwrap().as_f64().unwrap() as u32);
+        let w_height = window.inner_height().unwrap().as_f64().unwrap() as u32;
+        let w_width = window.inner_width().unwrap().as_f64().unwrap() as u32;
         let mut dom_dimension = if w_height > w_width {
             w_width
         } else {
