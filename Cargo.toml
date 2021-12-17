@@ -10,11 +10,16 @@ authors = ["Sarah <m.sarahgreywolf@outlook.com>"]
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+[target.'cfg(not(target_arch="wasm32"))'.dependencies]
+rand = "0.8.4"
+[target.'cfg(target_arch="wasm32")'.dependencies]
 wasm-bindgen = "0.2.78"
 wasm-bindgen-futures = "0.4.28"
 console_error_panic_hook = "0.1.6"
+getrandom = {version="0.2", features=["js"]}
+rand = {version="0.8.4"}
 
-[dependencies.web-sys]
+[target.'cfg(target_arch="wasm32")'.dependencies.web-sys]
 version = "0.3.55"
 features = [
     "Window",
