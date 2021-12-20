@@ -1,6 +1,6 @@
-use wasm_bindgen::{JsCast, prelude::*};
-use web_sys::{HtmlTableElement, HtmlTableCellElement, HtmlElement};
 use super::util::*;
+use wasm_bindgen::{prelude::*, JsCast};
+use web_sys::{HtmlElement, HtmlTableCellElement, HtmlTableElement};
 
 fn window() -> web_sys::Window {
     web_sys::window().expect("No global window exists")
@@ -18,7 +18,7 @@ fn body() -> web_sys::HtmlElement {
 pub struct Table {
     size: [u32; 2],
     element: HtmlTableElement,
-    cells: Vec<Cell>
+    cells: Vec<Cell>,
 }
 
 #[wasm_bindgen]
@@ -36,34 +36,47 @@ impl Table {
         let mut cells: Vec<Cell> = vec![];
         table.set_id("game");
         for row in 0..height {
-            let new_row = document().create_element("tr").expect(&format!("Failed to create row at {:#}", row));
+            let new_row = document()
+                .create_element("tr")
+                .expect(&format!("Failed to create row at {:#}", row));
             for column in 0..width {
-                let cell = document().create_element("td").expect(&format!("Failed to create cell at {:#},{:#}", column, row));
+                let cell = document()
+                    .create_element("td")
+                    .expect(&format!("Failed to create cell at {:#},{:#}", column, row));
                 cell.set_id(&format!("{:#}", column + row * width));
                 cell.set_class_name("inactive");
-                let cell_element = cell.dyn_ref::<HtmlTableCellElement>().expect(&format!("Element at {:#},{:#} was not a HtmlElement", column, row));
-                cell_element.set_width(&format!("{:#}", dom_dimension/width-4));
-                cell_element.set_height(&format!("{:#}", dom_dimension/height- 4));
+                let cell_element = cell.dyn_ref::<HtmlTableCellElement>().expect(&format!(
+                    "Element at {:#},{:#} was not a HtmlElement",
+                    column, row
+                ));
+                cell_element.set_width(&format!("{:#}", dom_dimension / width - 4));
+                cell_element.set_height(&format!("{:#}", dom_dimension / height - 4));
                 cells.push(Cell::new(column, row, cell_element.clone()));
                 new_row.append_child(&cell_element).unwrap();
             }
             table.append_child(&new_row).unwrap();
         }
-        let table_element = table.dyn_ref::<HtmlTableElement>().expect("Element was not a table");
+        let table_element = table
+            .dyn_ref::<HtmlTableElement>()
+            .expect("Element was not a table");
         if let Some(element) = element {
-            element.append_child(&table).expect("Failed to append table to element");
+            element
+                .append_child(&table)
+                .expect("Failed to append table to element");
         } else {
-            body().append_child(&table).expect("Failed to append table to body");
+            body()
+                .append_child(&table)
+                .expect("Failed to append table to body");
         }
         Table {
             size: [width, height],
             element: table_element.clone(),
-            cells
+            cells,
         }
     }
 
     fn get_cell(&mut self, x: usize, y: usize) -> &mut Cell {
-       &mut self.cells[x + y * self.size[1] as usize]
+        &mut self.cells[x + y * self.size[1] as usize]
     }
 }
 
@@ -72,7 +85,7 @@ pub struct Cell {
     position: [u32; 2],
     element: HtmlTableCellElement,
     background_image: String,
-    background_colour: String
+    background_colour: String,
 }
 
 #[wasm_bindgen]
@@ -92,7 +105,7 @@ impl Cell {
             position: [x, y],
             element,
             background_image: "".to_string(),
-            background_colour: "".to_string()
+            background_colour: "".to_string(),
         }
     }
 
@@ -106,7 +119,8 @@ impl Cell {
 
     fn set_callback(&mut self, cb: Box<dyn FnMut()>) {
         let closure = Closure::wrap(cb as Box<dyn FnMut()>);
-        self.element.set_onclick(Some(closure.as_ref().unchecked_ref()));
+        self.element
+            .set_onclick(Some(closure.as_ref().unchecked_ref()));
         closure.forget();
     }
 }
