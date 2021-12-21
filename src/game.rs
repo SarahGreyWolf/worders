@@ -14,14 +14,18 @@ const DEFAULT_BAG: [char; 100] = [
 
 #[derive(Debug)]
 pub struct GameState {
+    id: usize,
     bag: Vec<char>,
+    placed: Vec<char>,
     players: [Option<Player>; 4],
 }
 
 impl GameState {
-    pub fn new() -> Self {
+    pub fn new(id: usize) -> Self {
         GameState {
+            id,
             bag: DEFAULT_BAG.to_vec(),
+            placed: vec![],
             players: [None, None, None, None],
         }
     }
@@ -55,7 +59,7 @@ impl GameState {
 #[derive(Debug)]
 pub struct Player {
     username: &'static str,
-    score: u32,
+    score: u8,
     hand: Vec<char>,
 }
 
@@ -77,7 +81,7 @@ impl Player {
     }
 }
 
-fn get_character_score(character: char) -> u32 {
+fn get_character_score(character: char) -> u8 {
     match character {
         'E' | 'A' | 'I' | 'O' | 'N' | 'R' | 'T' | 'L' | 'S' | 'U' => 1,
         'D' | 'G' => 2,
@@ -90,11 +94,11 @@ fn get_character_score(character: char) -> u32 {
     }
 }
 
-fn calculate_score_from_placement(characters: Vec<char>) -> u32 {
+fn calculate_score_from_placement(characters: Vec<char>) -> u8 {
     characters
         .iter()
         .map(|c| get_character_score(*c))
-        .collect::<Vec<u32>>()
+        .collect::<Vec<u8>>()
         .iter()
         .sum()
 }
