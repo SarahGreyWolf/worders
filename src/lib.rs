@@ -1,7 +1,8 @@
 use game::{GameState, Player};
 
-mod game;
-mod thread_pool;
+pub mod game;
+pub mod packets;
+pub mod thread_pool;
 
 cfg_if::cfg_if! {
     if #[cfg(target_arch="wasm32")] {
