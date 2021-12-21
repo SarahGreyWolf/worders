@@ -38,3 +38,8 @@ features = [
     "HtmlTableCellElement",
     "HtmlCollection",
 ]
+
+[workspace]
+members = [
+    "worders_server"
+]
