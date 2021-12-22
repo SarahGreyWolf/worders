@@ -14,14 +14,12 @@ fn body() -> web_sys::HtmlElement {
     document().body().expect("No body for document exists")
 }
 
-#[wasm_bindgen]
 pub struct Table {
     size: [u32; 2],
     element: HtmlTableElement,
     cells: Vec<Cell>,
 }
 
-#[wasm_bindgen]
 impl Table {
     pub fn new(width: u32, height: u32, cell_size: u32, element: Option<HtmlElement>) -> Self {
         let table = document().create_element("table").unwrap();
@@ -75,20 +73,27 @@ impl Table {
         }
     }
 
-    fn get_cell(&mut self, x: usize, y: usize) -> &mut Cell {
-        &mut self.cells[x + y * self.size[1] as usize]
+    pub fn get_cell(&mut self, x: u32, y: u32) -> &mut Cell {
+        &mut self.cells[(x + y * self.size[1]) as usize]
+    }
+
+    pub fn get_cells(&mut self) -> Vec<Cell> {
+        self.cells.clone()
+    }
+
+    pub fn set_cells(&mut self, cells: Vec<Cell>) {
+        self.cells = cells;
     }
 }
 
-#[wasm_bindgen]
+#[derive(Clone)]
 pub struct Cell {
-    position: [u32; 2],
-    element: HtmlTableCellElement,
+    pub position: [u32; 2],
+    pub element: HtmlTableCellElement,
     background_image: String,
     background_colour: String,
 }
 
-#[wasm_bindgen]
 impl Cell {
     pub fn new(x: u32, y: u32, element: HtmlTableCellElement) -> Self {
         let cell_clone = element.clone();
@@ -117,7 +122,7 @@ impl Cell {
         self.background_colour = colour.to_string();
     }
 
-    fn set_callback(&mut self, cb: Box<dyn FnMut()>) {
+    pub fn set_callback(&mut self, cb: Box<dyn FnMut()>) {
         let closure = Closure::wrap(cb as Box<dyn FnMut()>);
         self.element
             .set_onclick(Some(closure.as_ref().unchecked_ref()));
