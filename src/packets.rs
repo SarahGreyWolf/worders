@@ -181,9 +181,16 @@ macro_rules! dec_packet {
     }
 }
 
-dec_packet!(PlayerState{tiles: Vec<char>, score: u8});
+dec_packet!(PlayerState{id: u16, tiles: Vec<char>, score: u8});
 dec_packet!(OtherPlayerState {
+    id: u16,
     username: String,
     score: u8
 });
 dec_packet!(GameState{id: u8, placed: Vec<char>});
+dec_packet!(Place {
+    id: u8,
+    tile: char,
+    x: u32,
+    y: u32
+});
