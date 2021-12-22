@@ -6,7 +6,7 @@ use tungstenite::accept;
 use tungstenite::handshake::HandshakeError;
 use tungstenite::protocol::Message;
 use worders::game::GameState;
-use worders::packets::{PacketFrom, PacketTo, PlayerState};
+use worders::packets::{PacketFrom, PacketTo, Place, PlayerState};
 use worders::thread_pool::ThreadPool;
 
 fn main() {
@@ -36,13 +36,11 @@ fn handle_websocket(stream: TcpStream) -> Result<(), Box<dyn std::error::Error>>
                 match ws.read_message() {
                     Ok(msg) => match msg {
                         Message::Binary(bytes) => {
-                            println!("{:02x?}", bytes.as_slice());
                             let mut cursor = Cursor::new(bytes.as_slice());
-                            let state = PlayerState::decode(&mut cursor);
-                            println!("Player State: {:?}", state);
+                            let placement = Place::decode(&mut cursor);
+                            println!("Placement: {:?}", placement);
                             let mut send_buffer = vec![];
-                            state.encode(&mut send_buffer);
-                            println!("Player State Buffer: {:02x?}", send_buffer);
+                            placement.encode(&mut send_buffer);
                             ws.write_message(Message::Binary(send_buffer)).unwrap();
                         }
                         _ => {
