@@ -71,6 +71,23 @@ impl PacketTo for u64 {
     }
 }
 
+impl PacketFrom for char {
+    fn decode(input: &mut Cursor<&[u8]>) -> Self {
+        input.read_u8().unwrap() as char
+    }
+}
+
+impl PacketTo for char {
+    fn length(self) -> usize {
+        // Rust actually stores characters as u16
+        // Since unicode characters can be 2 bytes, but we only care about ASCII letters
+        std::mem::size_of::<u8>()
+    }
+    fn encode<T: Write>(self, writer: &mut T) {
+        writer.write_u8(self as u8).unwrap();
+    }
+}
+
 impl PacketFrom for String {
     fn decode(input: &mut Cursor<&[u8]>) -> Self {
         let length = input.read_u16::<BigEndian>().unwrap();
@@ -97,7 +114,6 @@ impl PacketFrom for Vec<char> {
     fn decode(input: &mut Cursor<&[u8]>) -> Self {
         let length = input.read_u16::<BigEndian>().unwrap() as usize;
         let mut buffer: Vec<u8> = vec![0u8; length];
-        println!("{:?}:{:?}", length, buffer.len());
         let bytes_read = input.read(&mut buffer);
         assert!(bytes_read.is_ok());
         let content = buffer.iter().map(|b| *b as char).collect::<Vec<char>>();
@@ -111,7 +127,6 @@ impl PacketTo for Vec<char> {
     }
     fn encode<T: Write>(self, writer: &mut T) {
         let length = self.clone().length() as u16;
-        println!("Length: {:02x}", length);
         length.encode(writer);
         writer
             .write(
@@ -127,13 +142,13 @@ impl PacketTo for Vec<char> {
 
 macro_rules! dec_packet {
     ($name:ident{$($v:tt:$t:ty),*}) => {
-        #[derive(Debug)]
+        #[derive(Debug, Clone)]
         pub struct $name {
             $($v: $t),*
         }
 
         impl $name {
-            fn new($($v: $t),*) -> $name {
+            pub fn new($($v: $t),*) -> $name {
                 Self {
                     $(
                         $v
