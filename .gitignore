@@ -3,3 +3,6 @@ target
 /assets/english.txt
 
 Cargo.lock
+
+index.html
+css
