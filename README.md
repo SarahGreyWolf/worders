@@ -1,11 +1,7 @@
 # Worders
-## It's like scrabble
+## Crossword Game
 
-and by like scrabble,
-Worders is an implementation of the scrabble board game in Rust,\
-utilising WebAssembly to run it in the browser combined with a\
-WebSocket host server.
-
-
-### Disclaimer:
-Worders is not linked in any way to the official Scrabble game or HASBRO
+Worders is a competitive and fun crossword game where you create words using your given\
+letters in order to score points, when there are no more letters to draw from the bag\
+the game is over, and the final score for a player is their total points,\
+minus the score of each letter they have remaining.
