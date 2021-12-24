@@ -2,18 +2,6 @@ use super::util::*;
 use wasm_bindgen::{prelude::*, JsCast};
 use web_sys::{HtmlElement, HtmlTableCellElement, HtmlTableElement};
 
-fn window() -> web_sys::Window {
-    web_sys::window().expect("No global window exists")
-}
-
-fn document() -> web_sys::Document {
-    window().document().expect("No Document for window exists")
-}
-
-fn body() -> web_sys::HtmlElement {
-    document().body().expect("No body for document exists")
-}
-
 pub struct Table {
     size: [u32; 2],
     element: HtmlTableElement,
