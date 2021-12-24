@@ -1,6 +1,7 @@
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use std::io::prelude::*;
 use std::io::Cursor;
+use std::io::Result as IoResult;
 
 pub trait PacketFrom {
     fn decode(input: &mut Cursor<&[u8]>) -> Self;
@@ -8,7 +9,7 @@ pub trait PacketFrom {
 
 pub trait PacketTo {
     fn length(self) -> usize;
-    fn encode<T: Write>(self, writer: &mut T);
+    fn encode<T: Write>(self, writer: &mut T) -> IoResult<()>;
 }
 
 impl PacketFrom for u8 {
@@ -21,8 +22,9 @@ impl PacketTo for u8 {
     fn length(self) -> usize {
         std::mem::size_of::<u8>()
     }
-    fn encode<T: Write>(self, writer: &mut T) {
+    fn encode<T: Write>(self, writer: &mut T) -> IoResult<()> {
         writer.write_u8(self).unwrap();
+        Ok(())
     }
 }
 
@@ -36,8 +38,9 @@ impl PacketTo for u16 {
     fn length(self) -> usize {
         std::mem::size_of::<u16>()
     }
-    fn encode<T: Write>(self, writer: &mut T) {
+    fn encode<T: Write>(self, writer: &mut T) -> IoResult<()> {
         writer.write_u16::<BigEndian>(self).unwrap();
+        Ok(())
     }
 }
 
@@ -51,8 +54,9 @@ impl PacketTo for u32 {
     fn length(self) -> usize {
         std::mem::size_of::<u32>()
     }
-    fn encode<T: Write>(self, writer: &mut T) {
+    fn encode<T: Write>(self, writer: &mut T) -> IoResult<()> {
         writer.write_u32::<BigEndian>(self).unwrap();
+        Ok(())
     }
 }
 
@@ -66,8 +70,9 @@ impl PacketTo for u64 {
     fn length(self) -> usize {
         std::mem::size_of::<u64>()
     }
-    fn encode<T: Write>(self, writer: &mut T) {
+    fn encode<T: Write>(self, writer: &mut T) -> IoResult<()> {
         writer.write_u64::<BigEndian>(self).unwrap();
+        Ok(())
     }
 }
 
@@ -83,8 +88,9 @@ impl PacketTo for char {
         // Since unicode characters can be 2 bytes, but we only care about ASCII letters
         std::mem::size_of::<u8>()
     }
-    fn encode<T: Write>(self, writer: &mut T) {
+    fn encode<T: Write>(self, writer: &mut T) -> IoResult<()> {
         writer.write_u8(self as u8).unwrap();
+        Ok(())
     }
 }
 
@@ -103,10 +109,11 @@ impl PacketTo for String {
         std::mem::size_of::<char>() * self.len()
     }
 
-    fn encode<T: Write>(self, writer: &mut T) {
+    fn encode<T: Write>(self, writer: &mut T) -> IoResult<()> {
         let length = self.clone().length() as u16;
-        length.encode(writer);
+        length.encode(writer)?;
         writer.write(self.as_bytes()).unwrap();
+        Ok(())
     }
 }
 
@@ -172,9 +179,9 @@ impl PacketTo for Vec<char> {
     fn length(self) -> usize {
         std::mem::size_of::<u8>() * self.len()
     }
-    fn encode<T: Write>(self, writer: &mut T) {
+    fn encode<T: Write>(self, writer: &mut T) -> IoResult<()> {
         let length = self.clone().length() as u16;
-        length.encode(writer);
+        length.encode(writer)?;
         writer
             .write(
                 self.as_slice()
@@ -184,6 +191,7 @@ impl PacketTo for Vec<char> {
                     .as_slice(),
             )
             .unwrap();
+        Ok(())
     }
 }
 
@@ -220,9 +228,10 @@ macro_rules! dec_packet {
             fn length(self) -> usize {
                 $(self.$v.length()+)*0
             }
-            fn encode<T: Write>(self, writer: &mut T) {
-                $(self.$v.encode(writer);)*
+            fn encode<T: Write>(self, writer: &mut T) -> IoResult<()> {
+                $(self.$v.encode(writer)?;)*
                 writer.flush().unwrap();
+                Ok(())
             }
         }
     }
