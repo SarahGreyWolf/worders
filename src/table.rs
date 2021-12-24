@@ -9,18 +9,30 @@ pub struct Table {
 }
 
 impl Table {
-    pub fn new(width: u32, height: u32, cell_size: u32, element: Option<HtmlElement>) -> Self {
+    pub fn new(
+        width: u32,
+        height: u32,
+        _cell_size: u32,
+        element: Option<HtmlElement>,
+        class: Option<&str>,
+        id: Option<&str>,
+    ) -> Self {
         let table = document().create_element("table").unwrap();
+        if let Some(class) = class {
+            table.set_class_name(class);
+        }
+        if let Some(id) = id {
+            table.set_id(id);
+        }
         let window = window();
         let w_height = window.inner_height().unwrap().as_f64().unwrap() as u32;
         let w_width = window.inner_width().unwrap().as_f64().unwrap() as u32;
-        let mut dom_dimension = if w_height > w_width {
+        let dom_dimension = if w_height > w_width {
             w_width
         } else {
             w_height
         };
         let mut cells: Vec<Cell> = vec![];
-        table.set_id("game");
         for row in 0..height {
             let new_row = document()
                 .create_element("tr")
@@ -30,13 +42,75 @@ impl Table {
                     .create_element("td")
                     .expect(&format!("Failed to create cell at {:#},{:#}", column, row));
                 cell.set_id(&format!("{:#}", column + row * width));
-                cell.set_class_name("inactive");
                 let cell_element = cell.dyn_ref::<HtmlTableCellElement>().expect(&format!(
                     "Element at {:#},{:#} was not a HtmlElement",
                     column, row
                 ));
                 cell_element.set_width(&format!("{:#}", dom_dimension / width - 4));
                 cell_element.set_height(&format!("{:#}", dom_dimension / height - 4));
+                cells.push(Cell::new(column, row, cell_element.clone()));
+                new_row.append_child(&cell_element).unwrap();
+            }
+            table.append_child(&new_row).unwrap();
+        }
+        let table_element = table
+            .dyn_ref::<HtmlTableElement>()
+            .expect("Element was not a table");
+        if let Some(element) = element {
+            element
+                .append_child(&table)
+                .expect("Failed to append table to element");
+        } else {
+            body()
+                .append_child(&table)
+                .expect("Failed to append table to body");
+        }
+        Table {
+            size: [width, height],
+            element: table_element.clone(),
+            cells,
+        }
+    }
+
+    pub fn new_no_height_aspect(
+        width: u32,
+        height: u32,
+        cell_size: u32,
+        element: Option<HtmlElement>,
+        class: Option<&str>,
+        id: Option<&str>,
+    ) -> Self {
+        let table = document().create_element("table").unwrap();
+        if let Some(class) = class {
+            table.set_class_name(class);
+        }
+        if let Some(id) = id {
+            table.set_id(id);
+        }
+        let window = window();
+        let w_height = window.inner_height().unwrap().as_f64().unwrap() as u32;
+        let w_width = window.inner_width().unwrap().as_f64().unwrap() as u32;
+        let dom_dimension = if w_height > w_width {
+            w_width
+        } else {
+            w_height
+        };
+        let mut cells: Vec<Cell> = vec![];
+        for row in 0..height {
+            let new_row = document()
+                .create_element("tr")
+                .expect(&format!("Failed to create row at {:#}", row));
+            for column in 0..width {
+                let cell = document()
+                    .create_element("td")
+                    .expect(&format!("Failed to create cell at {:#},{:#}", column, row));
+                cell.set_id(&format!("{:#}", column + row * width));
+                let cell_element = cell.dyn_ref::<HtmlTableCellElement>().expect(&format!(
+                    "Element at {:#},{:#} was not a HtmlElement",
+                    column, row
+                ));
+                cell_element.set_width(&format!("{:#}", (dom_dimension / width) / 2));
+                cell_element.set_height(&format!("{:#}", (dom_dimension / width) / 2));
                 cells.push(Cell::new(column, row, cell_element.clone()));
                 new_row.append_child(&cell_element).unwrap();
             }
