@@ -237,16 +237,54 @@ macro_rules! dec_packet {
     }
 }
 
-dec_packet!(PlayerState{id: u16, tiles: Vec<char>, score: u8});
-dec_packet!(OtherPlayerState {
-    id: u16,
-    username: String,
-    score: u8
-});
-dec_packet!(GameState{id: u8, placed: Vec<char>});
-dec_packet!(Place {
-    id: u8,
-    tile: char,
-    x: u32,
-    y: u32
-});
+macro_rules! dec_packets {
+    ($($id:literal:$name:ident{$($v:tt:$t:ty),*};)*) => {
+        pub enum Packets {
+            $(
+                $name($name)
+            ),*,
+            Unknown
+        }
+
+        impl PacketFrom for Packets {
+            fn decode(cursor: &mut Cursor<&[u8]>) -> Self {
+                let packet_id: u8 = u8::decode(cursor);
+                match packet_id {
+                    $($id => Self::$name($name::decode(cursor)),)*
+                    _ => Self::Unknown
+                }
+            }
+        }
+
+        impl PacketTo for Packets {
+            fn length(self) -> usize {
+                let length = match self {
+                    $(Self::$name(packet) => packet.length(),)*
+                    Self::Unknown => 0,
+                };
+                length + std::mem::size_of::<u8>()
+            }
+
+            fn encode<T: Write>(self, writer: &mut T) -> IoResult<()> {
+                match self {
+                    $(Self::$name(packet) => {
+                        let id = $id as u8;
+                        id.encode(writer)?;
+                        packet.encode(writer)?;
+                        Ok(())
+                    })*
+                    Self::Unknown => Err(std::io::Error::new(std::io::ErrorKind::Other, "Unknown Packet!"))
+                }
+            }
+        }
+
+        $(dec_packet!($name{$($v:$t),*});)*
+    }
+}
+
+dec_packets!(
+    0:Ack {id: u16, state: AckState};
+    1:PlayerState {id: u16, player: u8, username: String, tiles: Vec<char>, score: u8};
+    2:Place {id: u16, tile: char, x: u32, y: u32};
+    3:GameState {id: u16, placed: Vec<char>};
+);
