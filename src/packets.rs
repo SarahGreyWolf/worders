@@ -110,6 +110,53 @@ impl PacketTo for String {
     }
 }
 
+#[repr(u8)]
+#[derive(Debug, Clone)]
+pub enum AckState {
+    Success = 0,
+    Confirm = 1,
+    Turn = 2,
+    Failure = 3,
+}
+
+impl From<u8> for AckState {
+    fn from(val: u8) -> Self {
+        match val {
+            0 => AckState::Success,
+            1 => AckState::Confirm,
+            2 => AckState::Turn,
+            _ => AckState::Failure,
+        }
+    }
+}
+
+impl From<AckState> for u8 {
+    fn from(val: AckState) -> Self {
+        match val {
+            AckState::Success => 0,
+            AckState::Confirm => 1,
+            AckState::Turn => 2,
+            AckState::Failure => 3,
+        }
+    }
+}
+
+impl PacketFrom for AckState {
+    fn decode(input: &mut Cursor<&[u8]>) -> Self {
+        AckState::from(input.read_u8().unwrap())
+    }
+}
+
+impl PacketTo for AckState {
+    fn length(self) -> usize {
+        std::mem::size_of::<u8>()
+    }
+    fn encode<T: Write>(self, writer: &mut T) -> IoResult<()> {
+        writer.write_u8(self.into()).unwrap();
+        Ok(())
+    }
+}
+
 impl PacketFrom for Vec<char> {
     fn decode(input: &mut Cursor<&[u8]>) -> Self {
         let length = input.read_u16::<BigEndian>().unwrap() as usize;
