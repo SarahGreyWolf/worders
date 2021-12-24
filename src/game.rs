@@ -17,6 +17,7 @@ pub struct GameState {
     id: usize,
     bag: Vec<char>,
     placed: Vec<char>,
+    turn: u8,
     players: [Option<Player>; 4],
 }
 
@@ -26,6 +27,7 @@ impl GameState {
             id,
             bag: DEFAULT_BAG.to_vec(),
             placed: vec![],
+            turn: 0,
             players: [None, None, None, None],
         }
     }
