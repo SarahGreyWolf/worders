@@ -37,6 +37,7 @@ features = [
     "HtmlTableRowElement",
     "HtmlTableColElement",
     "HtmlTableCellElement",
+    "HtmlButtonElement",
     "HtmlCollection",
     "WebSocket",
     "BinaryType"
