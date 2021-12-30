@@ -12,7 +12,7 @@ const DEFAULT_BAG: [char; 100] = [
     'W', 'W', 'X', 'Y', 'Y', 'Z',
 ];
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct GameState {
     id: usize,
     bag: Vec<char>,
@@ -58,7 +58,7 @@ impl GameState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Player {
     username: &'static str,
     score: u8,
