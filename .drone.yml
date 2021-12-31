@@ -1,0 +1,26 @@
+kind: pipeline
+type: docker
+name: default
+
+steps:
+- name: build
+  image: jdrouet/wasm-pack
+  commands:
+  - wasm-pack build --target web
+
+- name: post
+  image: appleboy/drone-discord
+  settings: 
+    webhook_id:
+      from_secret: discord_webhook_id
+    webhook_token:
+      from_secret: discord_webhook_token
+    username:
+      from_secret: discord_webhook_username
+    message: >
+      {{#success build.status}}
+        Build {{build.number}}, started at {{build.started}} succeeded!
+        Taking {{since build.started}}.
+      {{else}}
+        build {{build.number}} failed!
+      {{/success}}
