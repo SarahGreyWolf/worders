@@ -13,7 +13,7 @@ steps:
   - wasm-pack build --target web
 
 - name: post
-  image: appleboy/drone-discord
+  image: plugins/webhook
   settings: 
     username:
       from_secret: discord_webhook_id
