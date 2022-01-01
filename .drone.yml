@@ -8,7 +8,7 @@ platform:
 
 steps:
 - name: build
-  image: jdrouet/wasm-pack
+  image: sarahgreywolf/wasm-pack
   commands:
   - wasm-pack build --target web
 
