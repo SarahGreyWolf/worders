@@ -44,6 +44,11 @@ features = [
     "BinaryType"
 ]
 
+[package.metadata.wasm-pack.profile.dev]
+wasm-opt=false
+[package.metadata.wasm-pack.profile.release]
+wasm-opt=false
+
 [workspace]
 members = [
     "worders_server"
