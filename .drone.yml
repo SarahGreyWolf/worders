@@ -8,6 +8,6 @@ platform:
 
 steps:
 - name: build
-  image: sarahgreywolf/wasm-pack:2
+  image: sarahgreywolf/wasm-pack:latest
   commands:
   - wasm-pack build --target web
